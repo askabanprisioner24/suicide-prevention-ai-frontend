@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindCare AI - Mental Health Support</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Icons as simple SVG components
+        const Heart = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/>
+            </svg>
+        );
+
+        const Shield = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+        );
+
+        const Users = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+        );
+
+        const Phone = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+        );
+
+        const X = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+                <path d="M18 6 6 18"/>
+                <path d="M6 6l12 12"/>
+            </svg>
+        );
+
+        const UserPlus = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <line x1="19" x2="19" y1="8" y2="14"/>
+                <line x1="22" x2="16" y1="11" y2="11"/>
+            </svg>
+        );
+
+        // Emergency Contact Input Component
+        const EmergencyContactInput = ({ contact, index, onChange, onRemove, canRemove }) => {
+            return (
+                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 relative">
+                    {canRemove && (
+                        <button
+                            type="button"
+                            onClick={() => onRemove(index)}
+                            className="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+                    )}
+                    <h4 className="font-medium text-gray-700 mb-3">Emergency Contact {index + 1}</h4>
+                    <div className="space-y-3">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Contact Name *
+                            </label>
+                            <input
+                                type="text"
+                                value={contact.name}
+                                onChange={(e) => onChange(index, 'name', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Enter contact name"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Contact Phone *
+                            </label>
+                            <input
+                                type="tel"
+                                value={contact.phone}
+                                onChange={(e) => onChange(index, 'phone', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Enter phone number"
+                                required
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Sign Up Form Component
+        const SignupForm = ({ isVisible, onClose }) => {
+            const [formData, setFormData] = useState({
+                fullName: '',
+                email: '',
+                phone: '',
+                counsellorName: '',
+                counsellorMobile: ''
+            });
+
+            const [emergencyContacts, setEmergencyContacts] = useState([
+                { name: '', phone: '' }
+            ]);
+
+            const [errors, setErrors] = useState({});
+
+            const handleInputChange = (e) => {
+                const { name, value } = e.target;
+                setFormData(prev => ({
+                    ...prev,
+                    [name]: value
+                }));
+                // Clear error when user starts typing
+                if (errors[name]) {
+                    setErrors(prev => ({
+                        ...prev,
+                        [name]: ''
+                    }));
+                }
+            };
+
+            const handleEmergencyContactChange = (index, field, value) => {
+                const updatedContacts = emergencyContacts.map((contact, i) => 
+                    i === index ? { ...contact, [field]: value } : contact
+                );
+                setEmergencyContacts(updatedContacts);
+            };
+
+            const addEmergencyContact = () => {
+                setEmergencyContacts([...emergencyContacts, { name: '', phone: '' }]);
+            };
+
+            const removeEmergencyContact = (index) => {
+                setEmergencyContacts(emergencyContacts.filter((_, i) => i !== index));
+            };
+
+            const validateForm = () => {
+                const newErrors = {};
+
+                if (!formData.fullName.trim()) {
+                    newErrors.fullName = 'Full name is required';
+                }
+
+                if (!formData.email.trim()) {
+                    newErrors.email = 'Email is required';
+                } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+                    newErrors.email = 'Please enter a valid email address';
+                }
+
+                if (!formData.phone.trim()) {
+                    newErrors.phone = 'Phone number is required';
+                } else if (!/^\+?[\d\s\-\(\)]+$/.test(formData.phone)) {
+                    newErrors.phone = 'Please enter a valid phone number';
+                }
+
+                // Validate emergency contacts
+                emergencyContacts.forEach((contact, index) => {
+                    if (!contact.name.trim()) {
+                        newErrors[`emergencyContact${index}Name`] = 'Contact name is required';
+                    }
+                    if (!contact.phone.trim()) {
+                        newErrors[`emergencyContact${index}Phone`] = 'Contact phone is required';
+                    }
+                });
+
+                setErrors(newErrors);
+                return Object.keys(newErrors).length === 0;
+            };
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (validateForm()) {
+                    // Here you would typically send the data to your backend
+                    console.log('Form submitted:', { ...formData, emergencyContacts });
+                    alert('Account created successfully! (This is a demo - no actual account was created)');
+                    onClose();
+                }
+            };
+
+            if (!isVisible) return null;
+
+            return (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-bold text-gray-800">Create Your Account</h2>
+                                <button
+                                    onClick={onClose}
+                                    className="text-gray-500 hover:text-gray-700 transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            <div className="space-y-6">
+                                {/* Personal Information */}
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">Personal Information</h3>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Full Name *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="fullName"
+                                            value={formData.fullName}
+                                            onChange={handleInputChange}
+                                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                                errors.fullName ? 'border-red-500' : 'border-gray-300'
+                                            }`}
+                                            placeholder="Enter your full name"
+                                        />
+                                        {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Email Address *
+                                        </label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleInputChange}
+                                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                                errors.email ? 'border-red-500' : 'border-gray-300'
+                                            }`}
+                                            placeholder="Enter your email address"
+                                        />
+                                        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Phone Number *
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            name="phone"
+                                            value={formData.phone}
+                                            onChange={handleInputChange}
+                                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                                errors.phone ? 'border-red-500' : 'border-gray-300'
+                                            }`}
+                                            placeholder="Enter your phone number"
+                                        />
+                                        {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+                                    </div>
+                                </div>
+
+                                {/* Emergency Contacts */}
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">Emergency Contacts</h3>
+                                        <button
+                                            type="button"
+                                            onClick={addEmergencyContact}
+                                            className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition-colors text-sm flex items-center gap-1"
+                                        >
+                                            <UserPlus size={16} />
+                                            Add Contact
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="space-y-3">
+                                        {emergencyContacts.map((contact, index) => (
+                                            <EmergencyContactInput
+                                                key={index}
+                                                contact={contact}
+                                                index={index}
+                                                onChange={handleEmergencyContactChange}
+                                                onRemove={removeEmergencyContact}
+                                                canRemove={emergencyContacts.length > 1}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Counsellor Information */}
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">Counsellor Information (Optional)</h3>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Counsellor Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="counsellorName"
+                                            value={formData.counsellorName}
+                                            onChange={handleInputChange}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="Enter counsellor name"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Counsellor Mobile Number
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            name="counsellorMobile"
+                                            value={formData.counsellorMobile}
+                                            onChange={handleInputChange}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="Enter counsellor mobile number"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Submit Button */}
+                                <div className="flex gap-3 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={onClose}
+                                        className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleSubmit}
+                                        className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors font-medium"
+                                    >
+                                        Create Account
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            const [showSignup, setShowSignup] = useState(false);
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+                    {/* Navigation */}
+                    <nav className="bg-white shadow-sm border-b">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="flex justify-between items-center h-16">
+                                <div className="flex items-center">
+                                    <div className="flex items-center gap-2">
+                                        <div className="bg-blue-600 p-2 rounded-lg">
+                                            <Heart size={24} className="text-white" />
+                                        </div>
+                                        <span className="text-xl font-bold text-gray-800">MindCare AI</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <button className="text-gray-600 hover:text-gray-800 px-4 py-2 rounded-md hover:bg-gray-100 transition-colors">
+                                        Login
+                                    </button>
+                                    <button
+                                        onClick={() => setShowSignup(true)}
+                                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                                    >
+                                        Sign Up
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
+
+                    {/* Hero Section */}
+                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                        <div className="text-center">
+                            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+                                Suicide Detection and Prevention
+                                <span className="block text-blue-600">with AI</span>
+                            </h1>
+                            <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                                Your Mental Health Matters
+                            </p>
+                            <p className="text-lg text-gray-500 mb-12 max-w-2xl mx-auto">
+                                Advanced AI technology combined with compassionate care to provide early detection, 
+                                prevention, and support for mental health challenges. You're not alone in this journey.
+                            </p>
+                            
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+                                <button
+                                    onClick={() => setShowSignup(true)}
+                                    className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors text-lg font-medium"
+                                >
+                                    Get Started Today
+                                </button>
+                                <button className="border border-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors text-lg font-medium">
+                                    Learn More
+                                </button>
+                            </div>
+
+                            {/* Features Grid */}
+                            <div className="grid md:grid-cols-3 gap-8 mt-16">
+                                <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                                    <div className="bg-blue-100 p-3 rounded-full w-fit mx-auto mb-4">
+                                        <Shield size={32} className="text-blue-600" />
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-gray-800 mb-3">AI-Powered Detection</h3>
+                                    <p className="text-gray-600">
+                                        Advanced machine learning algorithms analyze patterns and provide early warning signs 
+                                        to help prevent mental health crises before they escalate.
+                                    </p>
+                                </div>
+
+                                <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                                    <div className="bg-green-100 p-3 rounded-full w-fit mx-auto mb-4">
+                                        <Users size={32} className="text-green-600" />
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-gray-800 mb-3">24/7 Support Network</h3>
+                                    <p className="text-gray-600">
+                                        Connect with trained counselors, emergency contacts, and peer support groups 
+                                        whenever you need help, day or night.
+                                    </p>
+                                </div>
+
+                                <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                                    <div className="bg-purple-100 p-3 rounded-full w-fit mx-auto mb-4">
+                                        <Heart size={32} className="text-purple-600" />
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-gray-800 mb-3">Compassionate Care</h3>
+                                    <p className="text-gray-600">
+                                        Every interaction is designed with empathy and understanding, providing a safe 
+                                        space for healing and growth.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Crisis Helpline */}
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-6 mt-16">
+                                <div className="flex items-center justify-center gap-2 mb-2">
+                                    <Phone size={20} className="text-red-600" />
+                                    <h3 className="text-lg font-semibold text-red-800">Crisis Helpline</h3>
+                                </div>
+                                <p className="text-red-700 mb-2">
+                                    If you're in immediate danger, please call emergency services or:
+                                </p>
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center text-red-800 font-medium">
+                                    <span>National Suicide Prevention Lifeline: 988</span>
+                                    <span>Crisis Text Line: Text HOME to 741741</span>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+
+                    {/* Sign Up Form Modal */}
+                    <SignupForm 
+                        isVisible={showSignup} 
+                        onClose={() => setShowSignup(false)} 
+                    />
+                </div>
+            );
+        };
+
+        // Render the App
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
