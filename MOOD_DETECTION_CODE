@@ -1,0 +1,62 @@
+!pip install deepface --quiet
+// THIS HAS TO BE PASTED IN SECOND CELL OF GOOGLE COLAB
+// CODE PROVIDED BY AKASH
+
+                            from google.colab import files
+                            from PIL import Image
+                            from IPython.display import display
+                            import os
+
+                              # Upload multiple image files
+                              uploaded_files = files.upload()
+
+                              # Create a directory to store uploaded images
+                              os.makedirs("uploaded_images", exist_ok=True)
+                              # Save uploaded images
+                              image_paths = []
+                              for filename, file in uploaded_files.items():
+                              filepath = os.path.join("uploaded_images", filename)
+                              with open(filepath, "wb") as f:
+                              f.write(file)
+                              image_paths.append(filepath)
+                              
+from deepface import DeepFace
+
+# Loop through each uploaded image and detect emotion
+for image_path in image_paths:
+    print(f"\n📷 Analyzing: {image_path}")
+    img = Image.open(image_path)
+    display(img)
+
+    try:
+        result = DeepFace.analyze(img_path=image_path, actions=['emotion'], enforce_detection=False)
+        emotion = result[0]['dominant_emotion']
+        print(f"😊 Detected Emotion: {emotion}\n")
+
+    except Exception as e:
+        print(f"❌ Failed to analyze {image_path}. Error: {e}")
+from deepface import DeepFace
+
+# Loop through each uploaded image
+for image_path in image_paths:
+    print(f"\n📷 Analyzing: {image_path}")
+    img = Image.open(image_path)
+    display(img)
+
+    try:
+        # Analyze the image
+        result = DeepFace.analyze(img_path=image_path, actions=['age', 'gender', 'emotion', 'race'], enforce_detection=False)
+        
+        # DeepFace returns a list of results, take the first
+        attributes = result[0]
+
+        print("🔍 Detected Human Attributes:\n")
+        print(f"👤 Gender: {attributes['gender']}")
+        print(f"📅 Age: {attributes['age']}")
+        print(f"🌍 Ethnicity: {attributes['dominant_race']}")
+        print(f"😊 Emotion: {attributes['dominant_emotion']}")
+        print()
+
+    except Exception as e:
+        print(f"❌ Failed to analyze {image_path}. Error: {e}")
+
